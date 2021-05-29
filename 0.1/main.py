@@ -8,8 +8,9 @@ import random
 import sys
 import string
 import hashlib
-
-block_chain = ['0']
+import socket
+import uuid
+import requests
 
 def Main():
     #Chooses option for concordia
@@ -42,6 +43,10 @@ def Mining():
 
     newAddr = ''.join(random.choice(alphabet) for x in range(number))
 
+def bal_view():
+    os.syetem('clear')
+    balance = open('balance.txt', 'r+').read()
+    print("Your balence is: " + balance)
 
 def setupVerif():
     #Init check, checks to see if string is in file before commiting to setup, meaning previous data isn't lost. If string isn't in the text file,
@@ -61,13 +66,11 @@ def setupVerif():
 
 def FinalSetup():
     os.system('clear')
+    print("Now setting your wallet and node registration up")
     #Final setup, wallet gen, node registration
     #wallet
     alphabet = string.ascii_letters
     newAddr = ''.join(random.choice(alphabet) for x in range(256))
-
-    #DEBUGGING
-    #print(newAddr)
 
     if 'newAddr' in open('checkAddr.txt').read():
         #DEBUGGING
@@ -77,15 +80,15 @@ def FinalSetup():
         FinalSetup()
     else:
         #DEBUGGING
-        print("2")
+        print("2 - FOR DEBUGGING PURPOSES")
 
         #Writes address to checkAddr.txt and you.txt
         open('checkAddr.txt', 'a+').write(newAddr + "\n")
-        open('you.txt', 'a+').write("Your address: ", newAddr + "\n")
         print("Your new crypto address is: ", newAddr)
         password = input("\nPlease enter a password:\n> ")
         passwordToBeHashed = bytes(password, 'utf-8')
 
+        #Hash function for password, will be needed to check balence, make transaction or start mining.
         m = hashlib.sha256()
         m.update(passwordToBeHashed)
         finalPassword = m.hexdigest()
@@ -95,8 +98,23 @@ def FinalSetup():
 
         '''
         Node registration
+        Gets Computer name, IP address, MAC address and then gives unique id to add to node list.
         '''
+        #Retreives necessary information for node registration
+        hostname = socket.gethostname()
+        ipAddr = requests.get('https://checkip.amazonaws.com').text.strip()
+        oneMacAddr = uuid.getnode()
+        finMacAddr = ':'.join(("%012X" % oneMacAddr) [i:i+2] for i in range(0,12,2))
 
+        #FOR TESTING:
+        print(hostname)
+        print(ipAddr)
+        print(finMacAddr)
+
+        open('you.txt', 'w').write("Your hostname: " + hostname + "\nYour IP address during setup: " + ipAddr + "\nYour MAC address: " + finMacAddr + "\n" + "Your address: " + newAddr + "\n")
+
+        #ONLY TURN ON IN PRODUCTION
+        open('setup.txt', 'w+').write("aFbHzDlK")
 
 
 if __name__ == '__main__':
